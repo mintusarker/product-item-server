@@ -26,7 +26,6 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    
 
     const productsCollections = client.db("products").collection("items");
 
@@ -36,7 +35,6 @@ async function run() {
     //     res.send(result);
     // });
 
-
     // get products
     app.get("/items", async (req, res) => {
       const query = {};
@@ -44,28 +42,58 @@ async function run() {
       res.send(result);
     });
 
-
     //product delete
-    app.delete('/items/:id', async (req, res) => {
-        const id = req.params.id;
-        console.log(id);
-        const filter = { _id: new ObjectId(id)}
-        const result = await productsCollections.deleteOne(filter);
-        console.log(result);
-        res.send(result);
+    app.delete("/items/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const result = await productsCollections.deleteOne(filter);
+      console.log(result);
+      res.send(result);
     });
 
-    
     //add product
-     app.post('/items', async (req, res) => {
-        const product = req.body;
-        console.log(product);
-        const result = await productsCollections.insertOne(product);
-        console.log(result);
-        res.send(result)
+    app.post("/items", async (req, res) => {
+      const product = req.body;
+      console.log(product);
+      const result = await productsCollections.insertOne(product);
+      console.log(result);
+      res.send(result);
     });
 
-    
+    // get by id
+    app.get("/items/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await productsCollections.find(query).toArray();
+      res.send(result);
+    });
+
+    // product update
+    app.put("/items/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const data = req.body;
+      const option = { upsert: true };
+      const updateProduct = {
+        $set: {
+          price: data.price,
+          title: data.title,
+          description: data.description,
+          brand: data.brand,
+          image_url: data.image_url,
+
+        },
+      };
+      console.log(updateProduct);
+      const result = await productsCollections.updateOne(
+        filter,
+        updateProduct,
+        option
+      );
+      res.send(result);
+    });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
